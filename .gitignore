@@ -1,23 +1,50 @@
+# Proprietary Source Code (Isolated from public repository)
+/server/
+/web/
+/container/
+/Dockerfile
+/entrypoint.sh
+/.github/
+
+# Binaries and build outputs
+/bin/
+/dist/*.tar
+/dist/*.tar.gz
+server/dist/
+web/dist/
+manifest.json
+
 # Dependencies
 node_modules/
-/web/dist/
-!/server/internal/webui/dist/
+.pnpm-store/
+package-lock.json
 
-# Binaries
-*.exe
-/server/singcube
-/server/singcube-server
-
-# Local runtime data
-data/
-etc/
-subs/
-*.sqlite
-*.log
+# Runtime and local state
+/data/
+/etc/
+/subs/
 *.pid
+*.log
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
 
-# OS & Editor
-.DS_Store
-Thumbs.db
+# Local scratch and test scripts with sensitive environment info
+/scratch/
+*.py
+fix.js
+.gemini/
+GEMINI.md
+*BLUEPRINT*.md
+*.blueprint.md
+.env
+.env.*
+!.env.example
+
+# IDE & OS files
 .vscode/
 .idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
