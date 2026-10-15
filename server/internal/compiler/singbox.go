@@ -1020,15 +1020,21 @@ func (e *Engine) CompileAll() error {
 		},
 		"rules": []map[string]any{
 			{
-				"outbound": "any",
-				"server":   "dns_direct",
-			},
-			{
 				"rule_set": "geosite-category-ads-all",
 				"action":   "reject",
 			},
 			{
 				"rule_set": "geosite-cn",
+				"server":   "dns_direct",
+			},
+			{
+				"domain_suffix": []string{
+					".lan", ".local", ".home.arpa", ".localhost", "localhost.weixin.qq.com",
+				},
+				"server": "dns_direct",
+			},
+			{
+				"outbound": "direct",
 				"server":   "dns_direct",
 			},
 		},
@@ -1125,11 +1131,13 @@ func (e *Engine) CompileAll() error {
 				"external_ui":         "",
 				"secret":              "",
 				"default_mode":        "rule",
+				"store_selected":      true,
 			},
 			"cache_file": map[string]any{
-				"enabled":   true,
-				"path":      "cache.db",
-				"store_dns": true,
+				"enabled":      true,
+				"path":         "cache.db",
+				"store_dns":    true,
+				"store_fakeip": true,
 			},
 		},
 	}

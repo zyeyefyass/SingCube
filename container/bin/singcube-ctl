@@ -30,8 +30,26 @@ ensure_tun_device() {
 }
 
 start_core() {
-  [ -x "$BIN" ] || exit 1
-  [ -f "$CONF" ] || exit 1
+  [ -x "$BIN" ] || { echo "sing-box binary not found at $BIN" >> "$LOG_FILE"; exit 1; }
+  [ -f "$CONF" ] || { echo "Config file not found at $CONF" >> "$LOG_FILE"; exit 1; }
+  
+  # 预检配置有效性 (Pre-flight check)
+  if ! "$BIN" check -c "$CONF" -D "$ETC" >/dev/null 2>&1; then
+    echo "[SingCube Pre-Flight] Current $CONF syntax invalid, checking fallback..." >> "$LOG_FILE"
+    if [ -f "$CONF.bak" ] && "$BIN" check -c "$CONF.bak" -D "$ETC" >/dev/null 2>&1; then
+      echo "[SingCube Pre-Flight] Restoring last valid configuration $CONF.bak" >> "$LOG_FILE"
+      cp -f "$CONF.bak" "$CONF"
+    else
+      echo "[SingCube Pre-Flight] FATAL: Syntax check failed on both current and backup configs:" >> "$LOG_FILE"
+      "$BIN" check -c "$CONF" -D "$ETC" >> "$LOG_FILE" 2>&1 || true
+      return 1
+    fi
+  fi
+  # 校验成功后备份当前黄金配置
+  cp -f "$CONF" "$CONF.bak" 2>/dev/null || true
+
+  # 清理旧僵尸进程与解绑占用
+  pkill -9 -x sing-box 2>/dev/null || true
   fix_ros_ip_rules
   ensure_tun_device
   export GOMEMLIMIT="50MiB"
@@ -51,6 +69,8 @@ stop_core_quiet() {
     rm -f "$PID_FILE"
   fi
   pkill -x sing-box 2>/dev/null || true
+  sleep 0.5
+  pkill -9 -x sing-box 2>/dev/null || true
 }
 
 case "$ACTION" in

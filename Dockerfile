@@ -19,8 +19,19 @@ RUN go mod tidy && \
 
 FROM --platform=$TARGETPLATFORM alpine:3.21 AS runtime
 ARG TARGETARCH
-RUN apk add --no-cache iptables ip6tables nftables iproute2 curl ca-certificates tzdata procps dropbear && \
+RUN apk add --no-cache iptables ip6tables nftables iproute2 curl ca-certificates tzdata procps dropbear tar && \
     mkdir -p /etc/init.d /etc/dropbear /opt/SingCube/bin /opt/SingCube/container/bin /opt/SingCube/data /opt/SingCube/etc /opt/SingCube/defaults/etc && \
+    case "${TARGETARCH}" in \
+      "amd64") SB_ARCH="amd64" ;; \
+      "arm64") SB_ARCH="arm64" ;; \
+      *) SB_ARCH="amd64" ;; \
+    esac && \
+    echo "Downloading official sing-box v1.14.3 for linux-${SB_ARCH}..." && \
+    curl -fsSL "https://github.com/SagerNet/sing-box/releases/download/v1.14.3/sing-box-1.14.3-linux-${SB_ARCH}.tar.gz" -o /tmp/singbox.tar.gz && \
+    tar -xzf /tmp/singbox.tar.gz -C /tmp && \
+    mv /tmp/sing-box-1.14.3-linux-${SB_ARCH}/sing-box /opt/SingCube/bin/sing-box && \
+    chmod +x /opt/SingCube/bin/sing-box && \
+    rm -rf /tmp/sing* && \
     rm -rf /var/cache/apk/*
 WORKDIR /opt/SingCube
 COPY --from=server-builder /out/singcube-server /opt/SingCube/bin/singcube-server
